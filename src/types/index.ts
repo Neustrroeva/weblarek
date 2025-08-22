@@ -1,8 +1,9 @@
+// Типы данных для проекта «Веб-ларёк» (только данные, без интерфейсов классов)
+
 export type ID = string;
 export type Nullable<T> = T | null;
 
-// Товары (API и UI)
-
+// Товары (API)
 export type ProductCategory = string;
 
 export interface IProductApi {
@@ -14,38 +15,20 @@ export interface IProductApi {
   price: Nullable<number>; // null = «Бесценно»
 }
 
-export interface IProduct {
-  id: ID;
-  title: string;
-  description: string;
-  category: ProductCategory;
-  image?: string;
-  price: Nullable<number>;
-  priceLabel: string; // для отображения («750 синапсов» / «Бесценно»)
-}
-
-// Обёртка списочных ответов API
 export interface ApiListResponse<T> {
   total: number;
   items: T[];
 }
 
 // Корзина
-
-export interface IBasketItem {
-  id: ID;
-  title: string;
-  price: Nullable<number>;
-}
+export type BasketItem = Pick<IProductApi, 'id' | 'title' | 'price'>;
 
 export interface IBasketState {
-  items: IBasketItem[];
+  items: BasketItem[];
   total: number;
-  canOrder: boolean;
 }
 
 // Оформление заказа
-
 export type PaymentMethod = 'card' | 'cash';
 
 export interface IOrderPart1 {
@@ -72,8 +55,7 @@ export interface IOrderResponseApi {
   total: number;
 }
 
-// Валидация форм
-
+// Валидация
 export type FormErrors<T> = Partial<Record<keyof T, string>>;
 
 export interface IValidationResult<T> {
@@ -81,12 +63,13 @@ export interface IValidationResult<T> {
   errors: FormErrors<T>;
 }
 
-// События приложения (для брокера событий)
+// Утилиты
+export type PriceFormatter = (price: IProductApi['price']) => string;
 
+// События приложения
 export type AppEvent =
   | 'app:init'
-  | 'catalog:loaded'
-  | 'catalog:load-error'
+  | 'items:change'
   | 'product:select'
   | 'modal:open'
   | 'modal:close'
@@ -94,22 +77,18 @@ export type AppEvent =
   | 'basket:add'
   | 'basket:remove'
   | 'basket:updated'
-  | 'order:open'
   | 'order:fill-step1'
   | 'order:fill-step2'
-  | 'order:validate'
   | 'order:submit'
   | 'order:success'
   | 'order:error'
   | 'form:errors'
   | 'form:valid';
 
-// Карта полезных нагрузок событий
 export interface EventPayloadMap {
   'app:init': undefined;
 
-  'catalog:loaded': { items: IProduct[] };
-  'catalog:load-error': { message: string; error?: unknown };
+  'items:change': { items: IProductApi[] };
 
   'product:select': { id: ID };
 
@@ -117,24 +96,21 @@ export interface EventPayloadMap {
   'modal:close': undefined;
 
   'basket:open': undefined;
-  'basket:add': { id: ID };
+  'basket:add': BasketItem;
   'basket:remove': { id: ID };
-  'basket:updated': IBasketState;
+  'basket:updated': { state: IBasketState };
 
-  'order:open': undefined;
   'order:fill-step1': IOrderPart1;
   'order:fill-step2': IOrderPart2;
-  'order:validate': undefined;
   'order:submit': IOrderRequest;
   'order:success': { orderId: ID; total: number };
-  'order:error': { message: string; error?: unknown };
+  'order:error': { message: string };
 
   'form:errors': { errors: Partial<Record<keyof (IOrderPart1 & IOrderPart2), string>> };
   'form:valid': { step: 1 | 2; isValid: boolean };
 }
 
-// Конфигурация окружения
-
+// Окружение
 export interface EnvConfig {
-  API_ORIGIN: string; // без завершающего слэша
+  API_ORIGIN: string;
 }
