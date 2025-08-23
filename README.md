@@ -178,20 +178,24 @@ src/
 * `render(data)` — возвращает контент для модалки; эмитят `order:fill-step1` / `order:fill-step2` и `order:submit`.
 
 **OrderSuccessView** (контент финального сообщения)  
-**Назначение:** показывает сообщение об успешной оплате.
+**Назначение:** отрисовать содержимое модального окна после успешного оформления заказа.
 
-**Конструктор:** `(template: HTMLTemplateElement, events)`
+**Конструктор:** `(template: HTMLTemplateElement, onClose: () => void)`  
+Получает ссылку на шаблон из `index.html` и колбэк закрытия модального окна. В конструкторе создаётся клон шаблона, кэшируются нужные узлы и навешивается обработчик клика на кнопку закрытия, который вызывает переданный `onClose` (обычно `() => modal.close()`).
 
 **Поля (кэш DOM):**
 - `template: HTMLTemplateElement` — исходный шаблон из `index.html`.
-- `events` — брокер событий.
 - `root: HTMLElement` — корень сгенерированного контента (клон шаблона).
 - `totalEl: HTMLElement` — узел для вывода суммы списания.
 - `messageEl?: HTMLElement` — узел для доп. текста.
 - `closeBtn?: HTMLButtonElement` — кнопка закрытия/подтверждения.
+- `onClose: () => void` — колбэк закрытия модалки, переданный извне (из `index.ts`).
 
 **Методы:**
-- `render(total: number, orderId?: ID): HTMLElement` — формирует контент из шаблона, подставляет значения, навешивает обработчик на `closeBtn` (эмит `modal:close`) и возвращает готовый `HTMLElement`.
+- `render(total: number, orderId?: ID): HTMLElement` — подставляет значения (`total`, `orderId`) в уже сконструированный DOM и **возвращает `HTMLElement`**.  
+  Пример использования: `modal.render(successView.render(total, orderId)); modal.open();`
+
+> Обработчики навешиваются **в конструкторе**, благодаря чему класс создаёт обработку один раз и остаётся «тонким» при повторных рендерах.
 
 ### Презентер (index.ts)
 

@@ -41,13 +41,9 @@ export interface IOrderPart2 {
   phone: string;
 }
 
-export interface IOrderRequest {
+export interface IOrderRequest extends IOrderPart1, IOrderPart2 {
   items: ID[];
   total: number;
-  payment: PaymentMethod;
-  address: string;
-  email: string;
-  phone: string;
 }
 
 export interface IOrderResponseApi {
