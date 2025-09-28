@@ -1,5 +1,5 @@
-@use "variables" as *;
-@use "mixins";
+@use "../scss/variables" as *;
+@use "../scss/mixins" as mixins;
 
 .form {
   @include mixins.flex(column);
@@ -8,22 +8,28 @@
 
   &__label {
     flex-grow: 1;
+    font-size: 1.5rem;
+    font-weight: 400;
+    color: $secondary;
   }
 
   &__input {
     background: transparent;
-    color: white;
+    color: $secondary;
     border: $defaultBorder;
+    border-color: #ffffff;
     border-radius: 1.5rem;
-    padding: 1rem;
-    font-size: 1.4rem;
+    padding: 1rem 1.5rem;
+    font-size: 1.5rem;
+    font-weight: 400;
     width: 100%;
     box-sizing: border-box;
-    outline-color: $secondary;
+    margin: 0;
 
     &:focus {
-      outline-style: solid;
+      outline: none;
     }
+
 
     &:invalid {
       border-color: $error;
@@ -32,6 +38,15 @@
 
     &::placeholder {
       color: lighten($primaryLight, 23%);
+      font-size: 1.5rem;
+      font-weight: 400;
     }
   }
+}
+
+.form__errors {
+  min-height: 1.5rem;
+  color: $error;
+  font-size: 1.5rem;
+  font-weight: 400;
 }

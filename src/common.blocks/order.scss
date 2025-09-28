@@ -1,5 +1,5 @@
-@use "variables" as *;
-@use "mixins";
+@use "../scss/variables" as *;
+@use "../scss/mixins" as mixins;
 
 .order {
   @include mixins.flex(column);
@@ -14,5 +14,17 @@
   &__buttons {
     @include mixins.flex(row);
     gap: 1.5rem;
+  }
+
+  &__head {
+    @include mixins.flex(column);
+    gap: 1.5rem;
+  }
+
+  &__title {
+    font-size: 1.5rem;
+    font-weight: 400;
+    color: $secondary;
+    margin: 0;
   }
 }

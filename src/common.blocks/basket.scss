@@ -1,5 +1,5 @@
-@use "variables" as *;
-@use "mixins";
+@use "../scss/variables" as *;
+@use "../scss/mixins" as mixins;
 
 .basket {
   @include mixins.flex(column);
@@ -7,14 +7,35 @@
   height: 100%;
 
   &__list {
+    @include mixins.flex(column);
+    gap: 1.5rem;
     padding: 0;
     margin: 0;
     flex-grow: 1;
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  &__empty-text {
+    margin: 0;
+    font-size: 1.2rem;
+    color: lighten($primaryLight, 25%);
   }
 
   &__item {
+    @include mixins.flex(row);
+    align-items: center;
     border-bottom: 1px solid $primary;
     padding: 1.5rem 0;
+
+    &:last-child {
+      border-bottom: none;
+    }
 
     &-index {
       @include mixins.flex(row);
@@ -25,15 +46,30 @@
       height: 55px;
       border-radius: 50%;
       background-color: $primary;
-      color: white;
+      color: $secondary;
       margin-right: 1rem;
+      flex-shrink: 0;
+    }
+
+    &-title {
+      flex: 1;
+      font-size: $titleFontSize;
+      font-weight: 500;
+      min-width: 0;
+    }
+
+    &-price {
+      font-size: 1.2rem;
+      margin-left: auto;
+      flex-shrink: 0;
     }
 
     &-delete {
       @include mixins.icon(2rem, 'trash');
-      @include mixins.link($hover, white);
+      @include mixins.link($hover, $secondary);
       opacity: 0.5;
-      margin-left: 4rem;
+      margin-left: 1rem;
+      flex-shrink: 0;
     }
   }
 }

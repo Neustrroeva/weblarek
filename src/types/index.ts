@@ -29,7 +29,7 @@ export interface IBasketState {
 }
 
 // Оформление заказа
-export type PaymentMethod = 'card' | 'cash';
+export type PaymentMethod = 'card' | 'cash' | null;
 
 export interface IOrderPart1 {
   payment: PaymentMethod;
@@ -73,6 +73,7 @@ export type AppEvent =
   | 'basket:add'
   | 'basket:remove'
   | 'basket:updated'
+  | 'order:open-step1'
   | 'order:fill-step1'
   | 'order:fill-step2'
   | 'order:submit'
@@ -96,6 +97,7 @@ export interface EventPayloadMap {
   'basket:remove': { id: ID };
   'basket:updated': { state: IBasketState };
 
+  'order:open-step1': undefined;
   'order:fill-step1': IOrderPart1;
   'order:fill-step2': IOrderPart2;
   'order:submit': IOrderRequest;

@@ -1,20 +1,27 @@
-@use "variables" as *;
-@use "mixins";
+@use "../scss/variables" as *;
+@use "../scss/mixins" as mixins;
 
 .button {
-  @include mixins.button($primary, white, $hover);
+  @include mixins.button($primary, $secondary, $hover);
   border: 0;
+  font-size: 1.5rem;
+  font-weight: 400;
 
   &_alt {
-    @include mixins.button(white, $primaryLight, $primaryLight);
+    @include mixins.button($secondary, $primaryLight, $primaryLight);
     border: $defaultBorder;
+    font-size: 1.5rem;
+    font-weight: 400;
+
     &:hover {
       border: $hoverBorder;
     }
   }
 
   &_alt-active {
-    @include mixins.button(white, $primaryLight, $primaryLight);
+    @include mixins.button($secondary, $primaryLight, $primaryLight);
     border: $hoverBorder;
+    font-size: 1.5rem;
+    font-weight: 400;
   }
 }

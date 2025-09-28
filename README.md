@@ -89,16 +89,6 @@ src/
 
 ### Слой Model
 
-**CatalogModel**
-**Назначение:** хранит массив атрибутов товаров, подготовленных к показу.
-**Конструктор:** `(events)`
-**Поля:**
-
-* `items: IProductApi[]` — актуальный список атрибутов товаров.
-  **Методы:**
-* `setItems(items: IProductApi[])` — сохраняет список и эмитит `items:change` с `items`.
-* `getById(id: ID)` — возвращает объект из `items` или `undefined`.
-
 **BasketModel**
 **Назначение:** хранит состояние корзины.
 **Конструктор:** `(events)`
@@ -197,10 +187,10 @@ src/
 
 > Обработчики навешиваются **в конструкторе**, благодаря чему класс создаёт обработку один раз и остаётся «тонким» при повторных рендерах.
 
-### Презентер (index.ts)
+### Презентер (AppController)
 
 * Вызывает API для получения каталога.
-* Передаёт массив атрибутов в `CatalogModel.setItems(items)`; модель сохраняет и эмитит `items:change`.
+* Сохраняет массив товаров в приватном поле `products: IProductApi[]`.
 * На `items:change` строит массив DOM-узлов карточек (`CardView` + шаблон галереи) и передаёт в `MainPageView.renderList(nodes)`.
 * На `product:select` открывает модалку превью (`PreviewView` → `ModalView.render(...)` + `open()`).
 * Операции с корзиной → обновление `BasketModel` → `basket:updated` → `BasketView.renderList(...)` → `ModalView.render(...)`.
@@ -211,7 +201,7 @@ src/
 **Кейс:** клик по карточке в галерее → превью товара в модалке.
 
 1. **V:** экземпляр `CardView` в галерее ловит клик и эмитит **`product:select`** с `{ id }`.
-2. **P:** презентер (в `src/index.ts`) обрабатывает `product:select`, берёт товар из `CatalogModel.getById(id)` и собирает контент превью через `PreviewView.render(attrs, inBasket)`.
+2. **P:** презентер (в `AppController`) обрабатывает `product:select`, берёт товар из массива `products` и собирает контент превью через `PreviewView.render(attrs, inBasket)`.
 3. **P → V:** презентер передаёт контент в `ModalView.render(content)` и вызывает `ModalView.open()`.
 4. **V → P:** в превью пользователь жмёт «Купить» → `PreviewView` эмитит **`basket:add`** с `{ id, title, price }`.
 5. **P → M:** презентер вызывает `BasketModel.add(item)`.

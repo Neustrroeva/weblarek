@@ -1,25 +1,176 @@
-@use "variables" as *;
-@use "mixins";
+@use "../scss/variables" as *;
+@use "../scss/mixins" as mixins;
 
 .card {
   @include mixins.flex(column);
   border: 0;
   border-radius: $defaultBorderRadius;
   background-color: $primary;
-  color: white;
+  color: $secondary;
   padding: $defaultPadding;
+  gap: 0;
+  text-align: left;
+  cursor: pointer;
+
+  &__header {
+    @include mixins.flex(row);
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.75rem;
+  }
+
+  &__category {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 1.25rem;
+    border-radius: 2.5rem;
+    color: $primary;
+    font-size: 1rem;
+    font-weight: 400;
+
+    &_soft { background-color: $category1; }
+    &_hard { background-color: $category5; }
+    &_other { background-color: $category2; }
+    &_additional { background-color: $category3; }
+    &_button { background-color: $category4; }
+  }
+
+  &__title {
+    font-size: $titleFontSize;
+    font-weight: 500;
+    margin: 0 0 2.5rem;
+    flex-grow: 1;
+  }
+
+  &__text {
+    text-align: left;
+    flex-grow: 1;
+    margin: 0 0 1.5rem;
+  }
+
+  &__media {
+    @include mixins.flex(column);
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    margin: 0 0 2.5rem;
+  }
+
+  &__image {
+    height: 390px;
+    aspect-ratio: 1;
+    margin: 1rem 1.5rem 1.5rem;
+    object-fit: contain;
+  }
+
+  &__column {
+    @include mixins.flex(column);
+    align-items: flex-start;
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  &__row {
+    @include mixins.flex(row);
+    align-items: center;
+    gap: $defaultPadding;
+    margin-top: auto;
+  }
+
+  &__stack {
+    @include mixins.flex(column);
+    gap: 1.5rem;
+    width: 100%;
+  }
+
+  &__stack-block {
+    @include mixins.flex(column);
+    gap: 0.75rem;
+  }
+
+  &__price {
+    font-size: 1.4rem;
+    font-weight: 400;
+    margin: 0;
+  }
 
   &_full {
-    flex-direction: row;
+    display: grid;
+    grid-template-columns: minmax(0, 38%) minmax(0, 62%);
+    gap: 2.75rem;
+    padding: 2.25rem 3.25rem 2.5rem 1.25rem;
+    border-radius: 2.5rem;
     background-color: transparent;
+    align-items: stretch;
 
-    .card__title {
-      flex-grow: 0;
+    .card__media {
+      justify-content: flex-start;
+      align-items: flex-start;
+      margin: 0;
+      padding: 0;
+      background: transparent;
+      height: 100%;
+    }
+
+    .card__image {
+      margin: 0;
+      width: min(100%, 420px);
+      height: auto;
+      max-height: 420px;
+    }
+
+    .card__column {
+      justify-content: space-between;
+      gap: 0;
+      height: 100%;
+    }
+
+    .card__stack {
+      gap: 1.75rem;
+      flex: 1 1 auto;
+    }
+
+    .card__stack-block {
+      gap: 0.75rem;
+
+      .card__category {
+        margin-bottom: 0.5rem;
+        align-self: flex-start;
+      }
+
+      .card__title {
+        margin: 0;
+      }
+
+      .card__text {
+        margin: 0;
+        font-size: 1.4rem;
+        font-weight: 400;
+      }
+    }
+
+    .card__row {
+      gap: 2rem;
+      margin-top: auto;
+    }
+
+    .card__button {
+      padding: 1rem 2.75rem;
+      font-size: 1.4rem;
+      line-height: 1.3;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .card__price {
+      font-size: 1.4rem;
+      font-weight: 400;
     }
   }
 
   &_compact {
-    flex-direction: row;
+    @include mixins.flex(row);
     background-color: transparent;
     align-items: center;
     border-radius: 0;
@@ -27,60 +178,5 @@
     .card__title {
       flex-grow: 1;
     }
-  }
-
-  &__column {
-    @include mixins.flex(column);
-    align-items: flex-start;
-  }
-
-  &__row {
-    @include mixins.flex(row);
-    align-items: center;
-    gap: $defaultPadding;
-  }
-
-  &__image {
-    height: 390px;
-    aspect-ratio: 1;
-    margin: 3.75rem;
-  }
-  &__title {
-    font-size: $titleFontSize;
-    font-weight: 500;
-    margin: 0;
-    flex-grow: 1;
-  }
-  &__text {
-    text-align: left;
-    flex-grow: 1;
-  }
-  &__category {
-    padding: 0.5rem 1.25rem;
-    border-radius: 2.5rem;
-    margin-bottom: 12px;
-    color: $primary;
-
-    &_soft {
-      background-color: $category1;
-    }
-    &_hard {
-      background-color: $category5;
-    }
-    &_other {
-      background-color: $category2;
-    }
-    &_additional {
-      background-color: $category3;
-    }
-    &_button {
-      background-color: $category4;
-    }
-  }
-  &__action {
-
-  }
-  &__price {
-
   }
 }

@@ -1,17 +1,15 @@
-@use "variables" as *;
-@use "mixins";
+@use "../scss/variables" as *;
+@use "../scss/mixins" as mixins;
 
 .modal {
   @include mixins.sublayer;
-  // height: max-content;
-  position: absolute;
   display: none;
   justify-content: center;
+  align-items: flex-start;
   background-color: $overlayBackground;
-  z-index: 100;
-  padding-top: 5vh;
-  padding-bottom: 5vh;
+  padding: 5vh 1.5rem;
   box-sizing: border-box;
+  z-index: 100;
 
   &_active {
     display: flex;
@@ -20,52 +18,72 @@
   &__container {
     @include mixins.container;
     @include mixins.flex(column);
+    position: relative;
     gap: $defaultPadding;
     background-color: $background;
-    // min-height: 90vmin;
     border-radius: 3rem;
     box-sizing: border-box;
-    position: relative;
+    max-height: 90vh;
+    padding-bottom: 3rem;
   }
 
   &__content {
-    flex-grow: 1;
+    flex: 1 1 auto;
+    overflow: hidden;
   }
 
-  &__title {
+  &__panel {
+    @include mixins.flex(column);
+    align-items: stretch;
+    gap: $defaultPadding;
+    width: 100%;
+  }
+
+  &__heading,
+  &__text,
+  &__label,
+  &__total {
     margin: 0;
     font-size: 1.5rem;
     font-weight: 400;
+    color: $secondary;
   }
 
-  &__actions {
+  &__controls {
     @include mixins.flex(row);
     align-items: center;
     gap: 2rem;
+    flex-wrap: wrap;
+  }
+
+  &__total {
+    font-weight: 400;
   }
 
   &__close {
     position: absolute;
-    top: calc(#{$defaultPadding} / 2);
-    right: calc(#{$defaultPadding} / 2);
+    top: $defaultPadding;
+    right: $defaultPadding;
     @include mixins.icon(2rem, 'close');
-    @include mixins.link(white, $hover);
+    @include mixins.link($secondary, $hover);
   }
 
-  &__footer {
-    @include mixins.flex(row);
-    align-items: center;
-    gap: 2rem;
-  }
-
-  &__message {
-    white-space:nowrap;
-    max-width: 60%;
-    text-overflow: ellipsis;
-    overflow: hidden;
-
-    &_error {
-      color: $error;
+  // Специальные стили для модалки корзины
+  &_basket {
+    .modal__container {
+      height: auto;
+      max-height: 90vh;
+    }
+    
+    .modal__content {
+      overflow-y: auto;
+      overflow-x: hidden;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      
+      &::-webkit-scrollbar {
+        display: none;
+      }
     }
   }
 }
