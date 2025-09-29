@@ -1,50 +1,64 @@
 import type { IOrderPart1, PaymentMethod } from '../types';
 import type { IEvents } from '../components/base/events';
-import { cloneTemplate, setDisabled } from '../utils/ui';
+import { Form } from '../components/base/Form';
+import { OrderStep1ValidationModel } from '../models/OrderStep1ValidationModel';
 
-export class CheckoutStep1View {
-  readonly root: HTMLElement;
+export class CheckoutStep1View extends Form<IOrderPart1> {
   private addressInput: HTMLInputElement;
   private paymentCardBtn: HTMLButtonElement;
   private paymentCashBtn: HTMLButtonElement;
-  private nextBtn: HTMLButtonElement;
-  private errorsEl: HTMLElement;
+  private validationModel: OrderStep1ValidationModel;
 
-  constructor(private events: IEvents) {
-    this.root = cloneTemplate('order');
+  constructor(events: IEvents) {
+    super('order', events);
     this.addressInput = this.root.querySelector('input[name="address"]') as HTMLInputElement;
     this.paymentCardBtn = this.root.querySelector('button[name="card"]') as HTMLButtonElement;
     this.paymentCashBtn = this.root.querySelector('button[name="cash"]') as HTMLButtonElement;
-    this.nextBtn = this.root.querySelector('.order__button') as HTMLButtonElement;
-    this.errorsEl = this.root.querySelector('.form__errors') as HTMLElement;
 
-    this.addressInput.addEventListener('input', () => this.validateForm());
-    this.paymentCardBtn.addEventListener('click', () => this.togglePayment('card'));
-    this.paymentCashBtn.addEventListener('click', () => this.togglePayment('cash'));
-
-    this.nextBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      this.submitForm();
-    });
+    this.validationModel = new OrderStep1ValidationModel(this.events);
+    
+    this.setupPaymentListeners();
   }
 
   mount(part: IOrderPart1): HTMLElement {
-    this.addressInput.value = part.address ?? '';
+    this.setInputValue('input[name="address"]', part.address ?? '');
+    
+    this.initializeValidationModel(part);
+    
     this.setActivePayment(part.payment ?? null);
-    this.validateForm();
+    
     return this.root;
   }
 
-  private togglePayment(method: Exclude<PaymentMethod, null>) {
+  private initializeValidationModel(part: IOrderPart1): void {
+    this.validationModel.setAddress(part.address ?? '');
+    this.validationModel.setPayment(part.payment ?? null);
+    
+    this.requestValidation();
+  }
+
+  private setupPaymentListeners(): void {
+    this.paymentCardBtn.addEventListener('click', () => this.togglePayment('card'));
+    this.paymentCashBtn.addEventListener('click', () => this.togglePayment('cash'));
+  }
+
+  private togglePayment(method: Exclude<PaymentMethod, null>): void {
     const current = this.getActivePayment();
     const next = current === method ? null : method;
     this.setActivePayment(next);
-    this.validateForm();
+    
+    this.validationModel.setPayment(next);
   }
 
-  private setActivePayment(method: PaymentMethod) {
-    this.paymentCardBtn.classList.toggle('button_alt-active', method === 'card');
-    this.paymentCashBtn.classList.toggle('button_alt-active', method === 'cash');
+  private setActivePayment(method: PaymentMethod): void {
+    this.paymentCardBtn.classList.remove('button_alt-active');
+    this.paymentCashBtn.classList.remove('button_alt-active');
+    
+    if (method === 'card') {
+      this.paymentCardBtn.classList.add('button_alt-active');
+    } else if (method === 'cash') {
+      this.paymentCashBtn.classList.add('button_alt-active');
+    }
   }
 
   private getActivePayment(): PaymentMethod {
@@ -53,32 +67,18 @@ export class CheckoutStep1View {
     return null;
   }
 
-  private validateForm() {
-    const address = this.addressInput.value.trim();
-    const method = this.getActivePayment();
-    const addressValid = address.length >= 5;
-    const methodValid = method !== null;
-    const isValid = addressValid && methodValid;
-
-    setDisabled(this.nextBtn, !isValid);
-
-    if (!methodValid) {
-      this.errorsEl.textContent = 'Необходимо выбрать способ оплаты';
-    } else if (!addressValid) {
-      this.errorsEl.textContent = 'Необходимо указать адрес';
-    } else {
-      this.errorsEl.textContent = '';
+  protected emitFieldChange(fieldName: string, value: string): void {
+    if (fieldName === 'address') {
+      this.validationModel.setAddress(value);
     }
   }
 
-  private submitForm() {
-    const address = this.addressInput.value.trim();
-    const method = this.getActivePayment();
-
-    if (method && address.length >= 5) {
-      this.events.emit('order:fill-step1', { payment: method, address });
-    } else {
-      this.validateForm();
-    }
+  protected requestValidation(): void {
+    this.events.emit('form:validate:step1');
+  }
+  
+  protected onSubmit(): void {
+    const formData = this.validationModel.getFormData();
+    this.events.emit('order:fill-step1', formData);
   }
 }

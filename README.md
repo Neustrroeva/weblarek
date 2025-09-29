@@ -1,232 +1,218 @@
-# Веб-ларёк
+# Web‑ларёк
 
-Интернет-магазин с товарами для веб-разработчиков: каталог, просмотр товара, корзина и двухшаговое оформление заказа.
+Интернет-магазин с товарами для веб-разработчиков и двухшаговым оформлением заказа.
 
-## Стек
+## Стек технологий
 
-* **TypeScript**
-* **Webpack 5** (dev-server, сборка)
-* **SCSS** (БЭМ)
-* **ESLint + Prettier**
-* **Babel** (`preset-env`)
-* **dotenv** (переменные окружения)
-* Инфраструктура: `Api` (HTTP-клиент), `EventEmitter` (событийная шина)
+- **TypeScript 5** — строгая типизация
+- **Vite** — сборщик и dev-сервер с HMR
+- **SCSS** — стили по методологии БЭМ
+- **ESLint + Prettier** — линтинг и форматирование кода
+- Собственная **событийная шина** (`EventEmitter`)
+- HTTP-клиент на базе `Api`/`ShopApi`
 
-## Быстрый старт
-
-**1) Установить зависимости**
+## Установка и запуск
 
 ```bash
-npm i
-```
+# Установка зависимостей
+npm install
 
-**2) Создать `.env` в корне**
+# Разработка (http://localhost:3000)
+npm run dev
 
-```dotenv
-API_ORIGIN=https://larek-api.nomoreparties.co
-```
+# Сборка для продакшена
+npm run build
 
-> Важно: без завершающего слэша.
+# Предпросмотр собранного проекта
+npm run preview
 
-**3) Запуск в dev-режиме**
-
-```bash
-npm run start
-```
-
-**4) Сборка и разработка**
-
-```bash
-npm run build        # production
-npm run build:dev    # development
-npm run watch        # наблюдение
-```
-
-**5) Линтинг/форматирование**
-
-```bash
+# Линтинг и форматирование
 npm run lint
-npm run lint:fix
 npm run format
 ```
 
-## Структура проекта (основное)
+## Структура проекта
 
 ```
 src/
-  index.ts             # точка входа (презентер-сценарий)
-  types/
-    index.ts           # интерфейсы/типы данных (товары, корзина, заказ, события и т.п.)
-  components/
-    base/
-      api.ts           # базовый API-клиент
-      events.ts        # брокер событий (EventEmitter)
-  common.blocks/       # БЭМ-блоки и стили
-  scss/                # общие стили
-  images/, vendor/     # ассеты и шрифты
+├── components/base/ # Базовые классы
+│ ├── Component.ts # Базовый класс для компонентов
+│ ├── Form.ts # Базовый класс для форм
+│ ├── ProductCard.ts # Базовый класс для карточек товаров
+│ ├── api.ts # HTTP-клиент
+│ └── events.ts # Событийная шина
+├── controllers/ # Контроллеры (презентеры)
+│ └── app.ts # Главный контроллер приложения
+├── models/ # Модели данных
+│ ├── basket.ts # Модель корзины
+│ ├── order.ts # Модель заказа
+│ ├── OrderStep1ValidationModel.ts # Валидация 1-го шага
+│ └── ContactValidationModel.ts # Валидация контактов
+├── services/ # Сервисы
+│ ├── modal.ts # Сервис модальных окон
+│ └── shop-api.ts # API магазина
+├── views/ # Представления
+│ ├── MainPageView.ts # Главная страница
+│ ├── CardView.ts # Карточка товара в каталоге
+│ ├── ProductModalView.ts # Модальное окно товара
+│ ├── BasketView.ts # Корзина
+│ ├── BasketItemView.ts # Элемент корзины
+│ ├── CheckoutStep1View.ts # Первый шаг оформления
+│ ├── CheckoutStep2View.ts # Второй шаг оформления
+│ └── OrderSuccessView.ts # Успешное оформление
+├── types/ # Типы данных
+│ └── index.ts # Все интерфейсы и типы
+├── utils/ # Утилиты
+│ ├── format.ts # Форматирование данных
+│ └── ui.ts # DOM-утилиты
+└── scss/ # Стили и миксины
 ```
 
-## Парадигма и слои (MVP + событийная шина)
+## Архитектура
 
-Применяется **MVP**:
+Проект реализован по паттерну **MVP** (Model-View-Presenter) с использованием событийной шины:
 
-* **Model** — слой, который **работает только с данными** (хранение, простая трансформация, валидация). **Сетью не занимается.**
-* **View** — слой, который **только отображает данные** и генерирует UI-события. **Не знает о сети и моделях.**
-* **Presenter** — связующее звено (в нашем случае — код в `src/index.ts`). Получает данные с сервера, передаёт их в модели, подписывает обработчики событий и инициирует обновление представлений.
+### Model (Модели)
+- **BasketModel** — управление состоянием корзины
+- **OrderModel** — данные заказа и базовая валидация
+- **OrderStep1ValidationModel** — валидация адреса и способа оплаты
+- **ContactValidationModel** — валидация email и телефона
 
-> Получение данных с сервера (HTTP-запросы) выполняется **в презентере** и только в нём. Модель получает уже готовые данные на вход и сохраняет их.
+### View (Представления)
+- **MainPageView** — отображение каталога товаров
+- **CardView** — карточка товара в каталоге  
+- **ProductModalView** — детальная информация о товаре
+- **BasketView** — содержимое корзины
+- **CheckoutStep1View** — форма выбора оплаты и адреса
+- **CheckoutStep2View** — форма ввода контактов
+- **OrderSuccessView** — сообщение об успешном заказе
 
-## События (ключевые)
+### Presenter (Контроллер)
+- **AppController** — связывает модели, представления и API через события
 
-* `items:change` — каталог обновлён в модели (массив атрибутов товаров).
-* `product:select` — пользователь кликнул карточку в галерее.
-* `basket:add` / `basket:remove` / `basket:updated` / `basket:open` — операции с корзиной.
-* `order:fill-step1` / `order:fill-step2` / `order:submit` / `order:success` / `order:error` — оформление заказа.
-* `modal:open` / `modal:close` — управление модальным контейнером.
-* `form:errors` / `form:valid` — результаты валидации полей.
+### Базовые классы
 
-## Классы (описание, без кода)
+#### Component
+Базовый класс для всех компонентов интерфейса:
+```typescript
+class Component {
+  readonly root: HTMLElement;
+  
+  // Методы для работы с DOM:
+  // setTextContent, setDisplay, setButtonDisabled,
+  // toggleClass, addEventListener, setAttribute, etc.
+}
+```
 
-### Слой Model
+#### Form
+Базовый класс для форм с валидацией:
+```typescript  
+abstract class Form<T> extends Component {
+  // Автоматическая обработка submit, валидация,
+  // управление состоянием кнопок
+  
+  abstract emitFieldChange(field: string, value: string): void;
+  abstract requestValidation(): void; 
+  abstract onSubmit(): void;
+}
+```
 
-**BasketModel**
-**Назначение:** хранит состояние корзины.
-**Конструктор:** `(events)`
-**Поля:**
+#### ProductCard
+Базовый класс для карточек товаров:
+```typescript
+abstract class ProductCard extends Component {
+  // Общая логика отображения товаров:
+  // setProductInfo, setCategoryClass, setImage
+}
+```
 
-* `items: BasketItem[]` — позиции в корзине (минимально необходимый набор атрибутов).
-  **Методы:**
-* `add(item: BasketItem)` / `remove(id: ID)` / `clear()` — меняют состав и эмитят `basket:updated`.
-* `total()` — вычисляет сумму (цены `null` не учитываются).
-* `has(id: ID)` — проверяет наличие позиции.
+## Основные события
 
-**OrderModel**
-**Назначение:** хранит состояние двух форм, валидирует и готовит запрос заказа.
-**Конструктор:** `(events)`
-**Поля:**
+```typescript
+// Товары и каталог
+'items:change'      // Каталог загружен
+'product:select'    // Клик по товару
 
-* `step1: { payment, address }`
-* `step2: { email, phone }`
-  **Методы:**
-* `setStep1(part)` — обновляет + валидирует; эмитит `form:errors`/`form:valid`.
-* `setStep2(part)` — обновляет + валидирует; эмитит `form:errors`/`form:valid`.
-* `toRequest(items: ID[], total: number)` — собирает `IOrderRequest`.
-* `reset()` — сбрасывает оба шага.
+// Корзина  
+'basket:add'        // Добавить в корзину
+'basket:remove'     // Удалить из корзины
+'basket:updated'    // Состояние корзины изменено
+'basket:open'       // Открыть корзину
 
-### Слой View
+// Заказ
+'order:open-step1'  // Открыть первый шаг
+'order:fill-step1'  // Данные первого шага
+'order:fill-step2'  // Данные второго шага
+'order:success'     // Заказ успешно оформлен
 
-**MainPageView** (ГЛАВНАЯ СТРАНИЦА)  
-**Назначение:** показывает галерею товаров и элементы шапки.  
-**Конструктор:** `(root, events)`
+// Модальные окна
+'modal:open'        // Открыть модальное окно
+'modal:close'       // Закрыть модальное окно
 
-**Поля:**
-- Корневой контейнер галереи.
-- Кнопка с иконкой корзины — `.header__basket`.
-- Счётчик товаров — `.header__basket-counter`.
+// Валидация форм
+'form:validation:result'  // Результат валидации
+```
 
-**Методы:**
-- `renderList(nodes: HTMLElement[])` — принимает **готовый массив** DOM-узлов карточек и вставляет через `replaceChildren(...)`. **Событий не генерирует.**
-- `setCounter(count: number)` — обновляет значение `.header__basket-counter`. Вызывается презентером на событие `basket:updated` (например, `setCounter(state.items.length)`).
-- При клике на иконку корзины — эмитит `basket:open`.
+## Типы данных
 
-**CardView** (ЕДИНЫЙ класс карточки)
-**Назначение:** создаёт один DOM-узел карточки по переданному шаблону.
-**Конструктор:** `(template: HTMLTemplateElement, events)`
-**Методы:**
+### Основные интерфейсы
 
-* `render(attrs: IProductApi): HTMLElement` — возвращает готовую карточку.
-* В режиме галереи вешает обработчик клика и эмитит `product:select` с `{ id }`.
+```typescript
+// Товар с сервера
+interface IProductApi {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  image: string;
+  price: number | null;
+}
 
-> В проекте 3 шаблона карточки в `index.html`: для галереи, для превью (модалка товара) и для корзины. Один класс `CardView`, разные шаблоны.
+// Элемент корзины
+type BasketItem = Pick<IProductApi, 'id' | 'title' | 'price'>;
 
-**ModalView** (ОДИН универсальный контейнер)
-**Назначение:** показывает **любой** переданный контент.
-**Конструктор:** `(container, events)` для `#modal-container`.
-**Методы:**
+// Первый шаг заказа
+interface IOrderPart1 {
+  payment: 'card' | 'cash' | null;
+  address: string;
+}
 
-* `render(content: HTMLElement)` — монтирует контент в контейнер.
-* `open()` / `close()` — управляет видимостью; закрытие по крестику и клику по оверлею.
+// Второй шаг заказа  
+interface IOrderPart2 {
+  email: string;
+  phone: string;
+}
 
-**PreviewView** (контент модалки товара)
-**Назначение:** выводит детали товара; кнопки «Купить/Убрать».
-**Методы:**
+// Полный заказ
+interface IOrderRequest extends IOrderPart1, IOrderPart2 {
+  items: string[];
+  total: number;
+}
+```
 
-* `render(attrs: IProductApi, inBasket: boolean): HTMLElement` — возвращает контент для `ModalView.render(...)`.
-* Эмитит `basket:add`/`basket:remove`.
+## Валидация
 
-**BasketView** (контент модалки корзины)
-**Назначение:** показывает список карточек корзины и сумму.
-**Методы:**
+Валидация вынесена в отдельные модели:
 
-* `renderList(nodes: HTMLElement[], total: number): HTMLElement` — возвращает контент для модалки; `nodes` — **готовые** DOM-узлы карточек корзины.
-* Кнопки: «Оформить» → `order:fill-step1`.
+- **OrderStep1ValidationModel** — проверяет адрес (мин. 5 символов) и выбор способа оплаты
+- **ContactValidationModel** — проверяет email и телефон по регулярным выражениям
 
-**OrderStep1View / OrderStep2View** (контент модалки оформления)
-**Назначение:** формы «оплата+адрес» и «контакты».
-**Методы:**
+Модели валидации эмитят события `form:validation:result` с результатами проверки.
 
-* `render(data)` — возвращает контент для модалки; эмитят `order:fill-step1` / `order:fill-step2` и `order:submit`.
+## Принципы разработки
 
-**OrderSuccessView** (контент финального сообщения)  
-**Назначение:** отрисовать содержимое модального окна после успешного оформления заказа.
+1. **DRY** — дублирующийся код вынесен в базовые классы
+2. **Единственная ответственность** — каждый класс решает одну задачу
+3. **Событийная развязка** — компоненты общаются только через события
+4. **Композиция** — `BasketView` использует `BasketItemView` для элементов
+5. **Типизация** — строгие TypeScript типы без `any`
 
-**Конструктор:** `(template: HTMLTemplateElement, onClose: () => void)`  
-Получает ссылку на шаблон из `index.html` и колбэк закрытия модального окна. В конструкторе создаётся клон шаблона, кэшируются нужные узлы и навешивается обработчик клика на кнопку закрытия, который вызывает переданный `onClose` (обычно `() => modal.close()`).
+## Функциональность
 
-**Поля (кэш DOM):**
-- `template: HTMLTemplateElement` — исходный шаблон из `index.html`.
-- `root: HTMLElement` — корень сгенерированного контента (клон шаблона).
-- `totalEl: HTMLElement` — узел для вывода суммы списания.
-- `messageEl?: HTMLElement` — узел для доп. текста.
-- `closeBtn?: HTMLButtonElement` — кнопка закрытия/подтверждения.
-- `onClose: () => void` — колбэк закрытия модалки, переданный извне (из `index.ts`).
-
-**Методы:**
-- `render(total: number, orderId?: ID): HTMLElement` — подставляет значения (`total`, `orderId`) в уже сконструированный DOM и **возвращает `HTMLElement`**.  
-  Пример использования: `modal.render(successView.render(total, orderId)); modal.open();`
-
-> Обработчики навешиваются **в конструкторе**, благодаря чему класс создаёт обработку один раз и остаётся «тонким» при повторных рендерах.
-
-### Презентер (AppController)
-
-* Вызывает API для получения каталога.
-* Сохраняет массив товаров в приватном поле `products: IProductApi[]`.
-* На `items:change` строит массив DOM-узлов карточек (`CardView` + шаблон галереи) и передаёт в `MainPageView.renderList(nodes)`.
-* На `product:select` открывает модалку превью (`PreviewView` → `ModalView.render(...)` + `open()`).
-* Операции с корзиной → обновление `BasketModel` → `basket:updated` → `BasketView.renderList(...)` → `ModalView.render(...)`.
-* Формы заказа — по аналогичной схеме событий.
-
-## Сценарий взаимодействия (V → P → M → P → V)
-
-**Кейс:** клик по карточке в галерее → превью товара в модалке.
-
-1. **V:** экземпляр `CardView` в галерее ловит клик и эмитит **`product:select`** с `{ id }`.
-2. **P:** презентер (в `AppController`) обрабатывает `product:select`, берёт товар из массива `products` и собирает контент превью через `PreviewView.render(attrs, inBasket)`.
-3. **P → V:** презентер передаёт контент в `ModalView.render(content)` и вызывает `ModalView.open()`.
-4. **V → P:** в превью пользователь жмёт «Купить» → `PreviewView` эмитит **`basket:add`** с `{ id, title, price }`.
-5. **P → M:** презентер вызывает `BasketModel.add(item)`.
-6. **M:** `BasketModel` обновляет `items/total` и эмитит **`basket:updated`** с `{ state }`.
-7. **P → V:** презентер обновляет счётчик на главной (`MainPageView`) и, если открыта корзина, пересобирает её контент: `BasketView.renderList(nodes, state.total)` → `ModalView.render(content)`.
-
-> `MainPageView.renderList(nodes: HTMLElement[])` и `BasketView.renderList(nodes: HTMLElement[], total: number)` получают **готовые DOM-узлы** карточек и не зависят от шаблонов карточки.
-
-## Данные и типы
-
-* **Дублирования нет.** Базовая сущность товара — `IProductApi`.
-* Если нужен вариант с необязательными полями — используем `Partial<IProductApi>` в коде, а не отдельный интерфейс.
-* Позиция корзины не дублирует товар, а выводится из него: `type BasketItem = Pick<IProductApi, 'id' | 'title' | 'price'>`.
-* Преобразование цены в строку выполняется функцией-утилитой (например, `(price) => string`); отдельное поле `priceLabel` в типы не добавляется.
-
-Полный список типов — в `src/types/index.ts`.
-
-## Функциональные требования
-
-* **Главная:** галерея товаров; клик по карточке — модалка с деталями; клик по иконке корзины — модалка корзины.
-* **Просмотр товара:** «Купить» — добавить (если не в корзине); «Убрать» — удалить.
-* **Оформление заказа:**
-
-  * Шаг 1 — способ оплаты (`card`/`cash`), адрес (обязателен).
-  * Шаг 2 — email и телефон (обязательны).
-  * Оплата → сообщение об успехе и очистка корзины.
-* **Модалки** закрываются по клику вне и по крестику.
-* Кнопки «Далее/Оплатить» доступны только при валидных данных текущего шага.
+- ✅ Просмотр каталога товаров
+- ✅ Детальная информация о товаре  
+- ✅ Добавление/удаление товаров в корзину
+- ✅ Двухшаговое оформление заказа
+- ✅ Валидация форм в реальном времени
+- ✅ Адаптивные модальные окна
+- ✅ Обработка ошибок API

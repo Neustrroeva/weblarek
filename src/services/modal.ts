@@ -37,7 +37,6 @@ export class ModalService {
   open(content: HTMLElement) {
     this.content.replaceChildren(content);
     
-    // Определяем тип модалки по содержимому
     if (content.classList.contains('basket')) {
       this.root.classList.add('modal_basket');
     } else {

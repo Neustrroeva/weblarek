@@ -1,21 +1,28 @@
 import type { IProductApi } from '../types';
 import type { IEvents } from '../components/base/events';
-import { cloneTemplate, setDisabled } from '../utils/ui';
-import { formatPrice } from '../utils/format';
+import { ProductCard } from '../components/base/ProductCard';
 
-export class ProductModalView {
-  readonly root: HTMLElement;
-  private currentProduct: IProductApi | null = null;
+export class ProductModalView extends ProductCard {
   private buyBtn: HTMLButtonElement;
 
-  constructor(private events: IEvents) {
-    this.root = cloneTemplate('card-preview');
+  constructor(events: IEvents) {
+    super('card-preview', events);
     this.buyBtn = this.root.querySelector('.card__button') as HTMLButtonElement;
   }
 
   render(product: IProductApi, inCart: boolean): HTMLElement {
-    this.currentProduct = product;
+    this.ensureMediaWrapper();
 
+    this.setProductInfo(product);
+    
+    this.setTextContent('.card__text', product.description || '');
+
+    this.updateButton(product.price === null, inCart);
+
+    return this.root;
+  }
+
+  private ensureMediaWrapper(): void {
     const media = this.root.querySelector('.card__media') as HTMLElement | null;
     if (!media) {
       const img = this.root.querySelector('.card__image') as HTMLImageElement | null;
@@ -26,62 +33,36 @@ export class ProductModalView {
         wrap.appendChild(img);
       }
     }
+  }
 
-    this.root.querySelector('.card__title')!.textContent = product.title;
-    this.root.querySelector('.card__price')!.textContent = formatPrice(product.price);
-
-    const categoryEl = this.root.querySelector('.card__category')!;
-    categoryEl.textContent = product.category;
-    categoryEl.className = `card__category card__category_${this.getCategoryClass(product.category)}`;
-
-    const imageEl = this.root.querySelector('.card__image') as HTMLImageElement;
-    imageEl.src = product.image;
-    imageEl.alt = product.title;
-
-    const textEl = this.root.querySelector('.card__text') as HTMLElement | null;
-    if (textEl) textEl.textContent = product.description || '';
-
-    const isPriceless = product.price === null;
+  private updateButton(isPriceless: boolean, inCart: boolean): void {
     if (isPriceless) {
-      this.buyBtn.textContent = 'Недоступно';
-      setDisabled(this.buyBtn, true);
+      this.setTextContent('.card__button', 'Недоступно');
+      this.setButtonDisabled('.card__button', true);
+      this.buyBtn.onclick = null;
     } else {
-      this.updateButton(inCart);
+      this.setButtonDisabled('.card__button', false);
+      this.setupButtonHandlers(inCart);
     }
-
-    return this.root;
   }
 
-  private updateButton(inCart: boolean) {
-    if (!this.currentProduct) return;
-    this.buyBtn.disabled = false;
-    this.buyBtn.onclick = null;
-
+  private setupButtonHandlers(inCart: boolean): void {
     if (inCart) {
-      this.buyBtn.textContent = 'Удалить из корзины';
+      this.setTextContent('.card__button', 'Удалить из корзины');
       this.buyBtn.onclick = () => {
-        if (!this.currentProduct) return;
-        this.events.emit('basket:remove', { id: this.currentProduct.id });
-        this.updateButton(false);
+        const product = this.getCurrentProduct();
+        if (!product) return;
+        this.events.emit('basket:remove', { id: product.id });
+        this.setupButtonHandlers(false);
       };
     } else {
-      this.buyBtn.textContent = 'Купить';
+      this.setTextContent('.card__button', 'Купить');
       this.buyBtn.onclick = () => {
-        if (!this.currentProduct) return;
-        this.events.emit('basket:add', { id: this.currentProduct.id });
-        this.updateButton(true);
+        const product = this.getCurrentProduct();
+        if (!product) return;
+        this.events.emit('basket:add', { id: product.id });
+        this.setupButtonHandlers(true);
       };
     }
-  }
-
-  private getCategoryClass(category: string): string {
-    const categoryMap: Record<string, string> = {
-      'софт-скил': 'soft',
-      'другое': 'other',
-      'дополнительное': 'additional',
-      'кнопка': 'button',
-      'хард-скил': 'hard'
-    };
-    return categoryMap[category] || 'other';
   }
 }
